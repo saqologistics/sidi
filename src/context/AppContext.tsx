@@ -98,7 +98,6 @@ interface AppContextValue {
   toast: ToastMessage | null;
   notify: (text: string, tone?: ToastMessage['tone']) => void;
   refreshData: () => Promise<void>;
-  // Mutations
   createPackage: (pkg: Omit<UmrahPackage, 'id'>) => Promise<UmrahPackage | null>;
   updatePackage: (id: string, patch: Partial<UmrahPackage>) => Promise<void>;
   deletePackage: (id: string) => Promise<void>;
@@ -177,10 +176,40 @@ function parseRoute(pathname: string): AppRoute {
   return '/';
 }
 
+async function fetchJsonSafely<T>(input: RequestInfo | URL, init?: RequestInit): Promise<{ ok: boolean; status: number; data: T | null; error?: string }> {
+  const res = await fetch(input, init);
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    return { ok: false, status: res.status, data: null, error: 'Non-JSON server response' };
+  }
+  const data = (await res.json()) as T & { error?: string };
+  if (!res.ok) {
+    return { ok: false, status: res.status, data: null, error: data?.error };
+  }
+  return { ok: true, status: res.status, data };
+}
+
+const DB_FALLBACK_KEY = 'sidi_db_fallback_v1';
+
+function loadFallbackDatabase(): AppDatabase {
+  try {
+    const raw = localStorage.getItem(DB_FALLBACK_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<AppDatabase>;
+      if (parsed && Array.isArray(parsed.packages) && Array.isArray(parsed.bookings)) {
+        return parsed as AppDatabase;
+      }
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return createSeedDatabase();
+}
+
 const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [db, setDb] = useState<AppDatabase>(() => createSeedDatabase());
+  const [db, setDb] = useState<AppDatabase>(() => loadFallbackDatabase());
   const [loading, setLoading] = useState(true);
   const [route, setRoute] = useState<AppRoute>(() => parseRoute(window.location.pathname));
   const [currency, setCurrency] = useState<Currency>('NGN');
@@ -241,19 +270,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
+  const persistSnapshot = useCallback((nextDb: AppDatabase) => {
+    setDb(nextDb);
+    try {
+      localStorage.setItem(DB_FALLBACK_KEY, JSON.stringify(nextDb));
+    } catch {
+      // ignore quota errors
+    }
+  }, []);
+
   const refreshData = useCallback(async () => {
     try {
-      const res = await fetch('/api/bootstrap');
-      if (res.ok) {
-        const data = (await res.json()) as AppDatabase;
-        setDb(data);
+      const result = await fetchJsonSafely<AppDatabase>('/api/bootstrap');
+      if (result.ok && result.data) {
+        persistSnapshot(result.data);
       }
     } catch (err) {
       console.error('Failed to load bootstrap state:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [persistSnapshot]);
 
   useEffect(() => {
     refreshData();
@@ -261,53 +298,69 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(
     async (email: string) => {
+      const normalized = email.trim().toLowerCase();
       try {
-        const res = await fetch('/api/auth/login', {
+        const result = await fetchJsonSafely<{ user: UserAccount }>('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email }),
         });
-        const data = await res.json();
-        if (!res.ok) {
-          notify(data.error || 'Login failed', 'error');
+        if (result.ok && result.data?.user) {
+          setCurrentUser(result.data.user);
+          localStorage.setItem('sidi_user', JSON.stringify(result.data.user));
+          setAuthModalOpen(false);
+          notify(`Welcome back, ${result.data.user.name}`, 'success');
+          return result.data.user;
+        }
+        if (result.status === 404 && result.error) {
+          notify(result.error, 'error');
           return null;
         }
-        setCurrentUser(data.user);
-        localStorage.setItem('sidi_user', JSON.stringify(data.user));
-        setAuthModalOpen(false);
-        notify(`Welcome back, ${data.user.name}`, 'success');
-        return data.user as UserAccount;
       } catch {
-        notify('Unable to reach server during sign in.', 'error');
+        // fallback below if running static without API
+      }
+
+      const localUser = db.users.find((u) => u.email.toLowerCase() === normalized);
+      if (!localUser) {
+        notify('Account not found. Please register or use a demo quick login.', 'error');
         return null;
       }
+      setCurrentUser(localUser);
+      localStorage.setItem('sidi_user', JSON.stringify(localUser));
+      setAuthModalOpen(false);
+      notify(`Welcome back, ${localUser.name}`, 'success');
+      return localUser;
     },
-    [notify]
+    [db.users, notify]
   );
 
   const register = useCallback(
     async (payload: { name: string; email: string; phone: string; city: string }) => {
       try {
-        const res = await fetch('/api/auth/register', {
+        const result = await fetchJsonSafely<{ user: UserAccount }>('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-        const data = await res.json();
-        if (!res.ok) {
-          notify(data.error || 'Registration failed', 'error');
-          return null;
+        if (!result.ok) {
+          if (result.error && result.status < 500) {
+            notify(result.error, 'error');
+            return null;
+          }
+          throw new Error(result.error || 'Registration failed');
         }
-        setCurrentUser(data.user);
-        localStorage.setItem('sidi_user', JSON.stringify(data.user));
-        setAuthModalOpen(false);
-        await refreshData();
-        notify(`Account created for ${data.user.name}`, 'success');
-        return data.user as UserAccount;
+        if (result.data?.user) {
+          setCurrentUser(result.data.user);
+          localStorage.setItem('sidi_user', JSON.stringify(result.data.user));
+          setAuthModalOpen(false);
+          await refreshData();
+          notify(`Account created for ${result.data.user.name}`, 'success');
+          return result.data.user;
+        }
       } catch {
         notify('Unable to register right now.', 'error');
-        return null;
       }
+      return null;
     },
     [notify, refreshData]
   );
@@ -333,19 +386,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const createPackage = useCallback(
     async (pkg: Omit<UmrahPackage, 'id'>) => {
       try {
-        const res = await fetch('/api/packages', {
+        const result = await fetchJsonSafely<UmrahPackage>('/api/packages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(pkg),
         });
-        const data = await res.json();
-        if (!res.ok) {
-          notify(data.error || 'Failed to publish package.', 'error');
+        if (!result.ok || !result.data) {
+          notify(result.error || 'Failed to publish package.', 'error');
           return null;
         }
         await refreshData();
-        notify(`Published "${data.title}" to live catalog.`, 'success');
-        return data as UmrahPackage;
+        notify(`Published "${result.data.title}" to live catalog.`, 'success');
+        return result.data;
       } catch {
         notify('Unable to reach server while publishing package.', 'error');
         return null;
@@ -357,13 +409,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const updatePackage = useCallback(
     async (id: string, patch: Partial<UmrahPackage>) => {
       try {
-        const res = await fetch(`/api/packages/${id}`, {
+        const result = await fetchJsonSafely<UmrahPackage>(`/api/packages/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(patch),
         });
-        if (!res.ok) {
-          notify('Failed to update package.', 'error');
+        if (!result.ok) {
+          notify(result.error || 'Failed to update package.', 'error');
           return;
         }
         await refreshData();
@@ -378,8 +430,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const deletePackage = useCallback(
     async (id: string) => {
       try {
-        const res = await fetch(`/api/packages/${id}`, { method: 'DELETE' });
-        if (!res.ok) {
+        const result = await fetchJsonSafely<{ ok: boolean }>(`/api/packages/${id}`, { method: 'DELETE' });
+        if (!result.ok) {
           notify('Failed to remove package.', 'error');
           return;
         }
@@ -395,14 +447,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const createFlight = useCallback(
     async (flight: Omit<FlightOffer, 'id'>) => {
       try {
-        const res = await fetch('/api/flights', {
+        const result = await fetchJsonSafely<FlightOffer>('/api/flights', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(flight),
         });
-        const data = await res.json();
-        if (!res.ok) {
-          notify(data.error || 'Failed to publish flight fare.', 'error');
+        if (!result.ok) {
+          notify(result.error || 'Failed to publish flight fare.', 'error');
           return;
         }
         await refreshData();
@@ -417,8 +468,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const deleteFlight = useCallback(
     async (id: string) => {
       try {
-        const res = await fetch(`/api/flights/${id}`, { method: 'DELETE' });
-        if (!res.ok) {
+        const result = await fetchJsonSafely<{ ok: boolean }>(`/api/flights/${id}`, { method: 'DELETE' });
+        if (!result.ok) {
           notify('Failed to remove flight route.', 'error');
           return;
         }
@@ -444,7 +495,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (!checkoutDraft) return null;
       const totalAmountNgn = checkoutDraft.unitPriceNgn * checkoutDraft.passengersCount;
       try {
-        const res = await fetch('/api/bookings', {
+        const result = await fetchJsonSafely<BookingRecord>('/api/bookings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -470,15 +521,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             hotelSummary: checkoutDraft.hotelSummary,
           }),
         });
-        if (!res.ok) {
-          const err = await res.json();
-          notify(err.error || 'Booking submission failed.', 'error');
+        if (!result.ok || !result.data) {
+          notify(result.error || 'Booking submission failed.', 'error');
           return null;
         }
-        const created = (await res.json()) as BookingRecord;
         await refreshData();
-        notify(`Booking ${created.reference} confirmed!`, 'success');
-        return created;
+        notify(`Booking ${result.data.reference} confirmed!`, 'success');
+        return result.data;
       } catch {
         notify('Unable to reach server while submitting booking.', 'error');
         return null;
@@ -490,20 +539,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const payInstallment = useCallback(
     async (bookingId: string, amountNgn: number, channel: PaymentChannel, note?: string) => {
       try {
-        const res = await fetch(`/api/bookings/${bookingId}/pay`, {
+        const result = await fetchJsonSafely<BookingRecord>(`/api/bookings/${bookingId}/pay`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ amountNgn, channel, note }),
         });
-        if (!res.ok) {
-          const err = await res.json();
-          notify(err.error || 'Payment failed.', 'error');
+        if (!result.ok || !result.data) {
+          notify(result.error || 'Payment failed.', 'error');
           return null;
         }
-        const updated = (await res.json()) as BookingRecord;
         await refreshData();
-        notify(`Installment payment applied to ${updated.reference}.`, 'success');
-        return updated;
+        notify(`Installment payment applied to ${result.data.reference}.`, 'success');
+        return result.data;
       } catch {
         notify('Unable to reach server while processing payment.', 'error');
         return null;
@@ -515,12 +562,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const updateBookingStatus = useCallback(
     async (bookingId: string, status: BookingRecord['status']) => {
       try {
-        const res = await fetch(`/api/bookings/${bookingId}/status`, {
+        const result = await fetchJsonSafely<BookingRecord>(`/api/bookings/${bookingId}/status`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status }),
         });
-        if (!res.ok) {
+        if (!result.ok) {
           notify('Failed to update booking status.', 'error');
           return;
         }
@@ -536,14 +583,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addGalleryItem = useCallback(
     async (item: Omit<GalleryItem, 'id'>) => {
       try {
-        const res = await fetch('/api/gallery', {
+        const result = await fetchJsonSafely<GalleryItem>('/api/gallery', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(item),
         });
-        if (!res.ok) {
-          const err = await res.json();
-          notify(err.error || 'Failed to add media item.', 'error');
+        if (!result.ok) {
+          notify(result.error || 'Failed to add media item.', 'error');
           return;
         }
         await refreshData();
@@ -558,12 +604,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const updateGalleryItem = useCallback(
     async (id: string, patch: Partial<GalleryItem>) => {
       try {
-        const res = await fetch(`/api/gallery/${id}`, {
+        const result = await fetchJsonSafely<GalleryItem>(`/api/gallery/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(patch),
         });
-        if (!res.ok) {
+        if (!result.ok) {
           notify('Failed to update gallery item.', 'error');
           return;
         }
@@ -579,8 +625,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const deleteGalleryItem = useCallback(
     async (id: string) => {
       try {
-        const res = await fetch(`/api/gallery/${id}`, { method: 'DELETE' });
-        if (!res.ok) {
+        const result = await fetchJsonSafely<{ ok: boolean }>(`/api/gallery/${id}`, { method: 'DELETE' });
+        if (!result.ok) {
           notify('Failed to delete gallery item.', 'error');
           return;
         }
@@ -596,20 +642,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const submitVisaApplication = useCallback(
     async (payload: Omit<VisaApplication, 'id' | 'stage' | 'updatedAt'>) => {
       try {
-        const res = await fetch('/api/visas', {
+        const result = await fetchJsonSafely<VisaApplication>('/api/visas', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-        if (!res.ok) {
-          const err = await res.json();
-          notify(err.error || 'Could not submit visa application.', 'error');
+        if (!result.ok || !result.data) {
+          notify(result.error || 'Could not submit visa application.', 'error');
           return null;
         }
-        const created = (await res.json()) as VisaApplication;
         await refreshData();
         notify('Visa application submitted to Sidi Processing Desk.', 'success');
-        return created;
+        return result.data;
       } catch {
         notify('Unable to reach server while submitting visa.', 'error');
         return null;
@@ -629,12 +673,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     ) => {
       try {
-        const res = await fetch(`/api/visas/${id}`, {
+        const result = await fetchJsonSafely<VisaApplication>(`/api/visas/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(patch),
         });
-        if (!res.ok) {
+        if (!result.ok) {
           notify('Failed to update visa record.', 'error');
           return;
         }
@@ -650,14 +694,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addEscort = useCallback(
     async (escort: Omit<EscortMember, 'id'>) => {
       try {
-        const res = await fetch('/api/escorts', {
+        const result = await fetchJsonSafely<EscortMember>('/api/escorts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(escort),
         });
-        if (!res.ok) {
-          const err = await res.json();
-          notify(err.error || 'Failed to add escort.', 'error');
+        if (!result.ok) {
+          notify(result.error || 'Failed to add escort.', 'error');
           return;
         }
         await refreshData();
@@ -672,14 +715,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addNotice = useCallback(
     async (notice: Omit<OfficialNotice, 'id' | 'createdAt'>) => {
       try {
-        const res = await fetch('/api/notices', {
+        const result = await fetchJsonSafely<OfficialNotice>('/api/notices', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(notice),
         });
-        if (!res.ok) {
-          const err = await res.json();
-          notify(err.error || 'Failed to publish notice.', 'error');
+        if (!result.ok) {
+          notify(result.error || 'Failed to publish notice.', 'error');
           return;
         }
         await refreshData();
@@ -694,8 +736,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const deleteNotice = useCallback(
     async (id: string) => {
       try {
-        const res = await fetch(`/api/notices/${id}`, { method: 'DELETE' });
-        if (!res.ok) {
+        const result = await fetchJsonSafely<{ ok: boolean }>(`/api/notices/${id}`, { method: 'DELETE' });
+        if (!result.ok) {
           notify('Failed to delete notice.', 'error');
           return;
         }
@@ -711,14 +753,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const submitInquiry = useCallback(
     async (inquiry: Omit<ContactInquiry, 'id' | 'createdAt'>) => {
       try {
-        const res = await fetch('/api/inquiries', {
+        const result = await fetchJsonSafely<ContactInquiry>('/api/inquiries', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(inquiry),
         });
-        if (!res.ok) {
-          const err = await res.json();
-          notify(err.error || 'Could not send inquiry. Please check all fields.', 'error');
+        if (!result.ok) {
+          notify(result.error || 'Could not send inquiry. Please check all fields.', 'error');
           return false;
         }
         await refreshData();
@@ -750,19 +791,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       notes?: string;
     }) => {
       try {
-        const res = await fetch('/api/admin/register-pilgrim', {
+        const result = await fetchJsonSafely<{
+          booking: BookingRecord;
+          user: UserAccount;
+          visa: VisaApplication | null;
+        }>('/api/admin/register-pilgrim', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-        const data = await res.json();
-        if (!res.ok) {
-          notify(data.error || 'Could not register pilgrim.', 'error');
+        if (!result.ok || !result.data) {
+          notify(result.error || 'Could not register pilgrim.', 'error');
           return null;
         }
         await refreshData();
-        notify(`Pilgrim registered! Booking ${data.booking.reference} issued.`, 'success');
-        return data as { booking: BookingRecord; user: UserAccount; visa: VisaApplication | null };
+        notify(`Pilgrim registered! Booking ${result.data.booking.reference} issued.`, 'success');
+        return result.data;
       } catch {
         notify('Unable to reach server while registering pilgrim.', 'error');
         return null;

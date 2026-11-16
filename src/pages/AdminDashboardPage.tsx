@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   FileCheck2,
   Image as ImageIcon,
+  Mail,
   Package,
   Plus,
   Receipt,
@@ -32,7 +33,7 @@ import {
   getSeatsRemaining,
   validateAdminPilgrimRegistration,
 } from '../utils/travelLogic';
-import { SafeImage } from '../components/BrandVisuals';
+import { IslamicGeometricBackdrop, SafeImage, StatusPill } from '../components/BrandVisuals';
 
 type AdminTab = 'analytics' | 'pilgrims' | 'packages' | 'gallery' | 'bookings' | 'visas' | 'escorts';
 
@@ -127,8 +128,8 @@ export function AdminDashboardPage() {
 
   if (!currentUser || currentUser.role !== 'admin') {
     return (
-      <div className="bg-[#F8FAFC] min-h-[75vh] flex items-center justify-center p-6">
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 max-w-md w-full text-center space-y-4">
+      <div className="bg-[#FAF9F6] min-h-[75vh] flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 max-w-md w-full text-center space-y-4 shadow-sm">
           <ShieldCheck className="w-10 h-10 text-[#0A224E] mx-auto" />
           <h1 className="font-display text-2xl font-bold text-[#0A224E]">
             Admin &amp; Operations Console
@@ -140,7 +141,7 @@ export function AdminDashboardPage() {
           <button
             type="button"
             onClick={() => login('admin@siditravel.com')}
-            className="w-full py-2.5 px-4 text-xs font-semibold bg-[#0A224E] hover:bg-[#0F2C67] text-white rounded-lg"
+            className="w-full py-3 px-4 text-xs font-bold bg-[#0A224E] hover:bg-[#102F6A] text-white rounded-xl"
           >
             1-Click Demo Admin Login (admin@siditravel.com)
           </button>
@@ -187,7 +188,12 @@ export function AdminDashboardPage() {
       tier: pkgTier,
       subtitle: `${pkgTier} Pilgrimage Tier`,
       priceNgn: numericPrice,
-      hotelRating: pkgTier === 'Premium' ? '5★ Haram Courtyard' : pkgTier === 'Luxury' ? '4★ Walking Distance' : '3★ Quality Hotel',
+      hotelRating:
+        pkgTier === 'Premium'
+          ? '5★ Haram Courtyard'
+          : pkgTier === 'Luxury'
+            ? '4★ Walking Distance'
+            : '3★ Quality Hotel',
       makkahHotel: pkgMakkah.trim() || 'Partner Makkah Hotel',
       madinahHotel: pkgMadinah.trim() || 'Partner Madinah Hotel',
       distanceToHaram: pkgTier === 'Premium' ? '50m' : '300m',
@@ -367,25 +373,28 @@ export function AdminDashboardPage() {
   }, [db.bookings, pilSearch]);
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <div className="bg-[#FAF9F6] min-h-screen">
+      <div className="relative bg-[#05122B] text-white py-8 border-b border-[#D4AF37]/30 overflow-hidden">
+        <IslamicGeometricBackdrop className="opacity-30" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold text-[#0F2C67]">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#F5B800]">
               Sidi Travel &amp; Tours Ltd. · Operations Control
             </p>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-[#0A224E]">
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-white mt-1">
               Admin &amp; Operations Dashboard
             </h1>
           </div>
-          <span className="text-xs font-mono text-slate-600">
+          <span className="px-3.5 py-1.5 rounded-xl bg-white/10 border border-white/15 text-xs font-mono text-slate-200">
             Signed in: {currentUser.email}
           </span>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Responsive Sidebar: horizontal scrollable strip on mobile, vertical menu on desktop */}
-          <aside className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 p-2 sm:p-3 flex lg:flex-col gap-1.5 overflow-x-auto no-scrollbar lg:sticky lg:top-28">
+          {/* Responsive Sidebar */}
+          <aside className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/90 p-2 sm:p-3 flex lg:flex-col gap-1.5 overflow-x-auto no-scrollbar lg:sticky lg:top-28 shadow-xs">
             {[
               { id: 'analytics' as const, label: 'Executive Analytics', icon: BarChart3 },
               { id: 'pilgrims' as const, label: 'Pilgrim Registration', icon: UserPlus },
@@ -403,7 +412,7 @@ export function AdminDashboardPage() {
                   type="button"
                   onClick={() => setTab(item.id)}
                   className={`lg:w-full flex items-center gap-2.5 px-3.5 py-2.5 min-h-[42px] text-xs font-semibold rounded-xl transition-colors whitespace-nowrap shrink-0 ${
-                    active ? 'bg-[#0A224E] text-white' : 'text-slate-700 hover:bg-slate-100'
+                    active ? 'bg-[#0A224E] text-white shadow-xs' : 'text-slate-700 hover:bg-slate-100'
                   }`}
                 >
                   <Icon className={`w-4 h-4 shrink-0 ${active ? 'text-[#F5B800]' : 'text-slate-500'}`} />
@@ -418,26 +427,26 @@ export function AdminDashboardPage() {
             {tab === 'analytics' && (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-white rounded-2xl border border-slate-200 p-5">
-                    <span className="text-xs text-slate-500">Collected Revenue</span>
+                  <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs">
+                    <span className="text-xs font-medium text-slate-500">Collected Revenue</span>
                     <p className="font-mono text-xl font-bold text-[#0A224E] tabular-nums mt-1">
                       {formatMoney(totalRevenueNgn, currency)}
                     </p>
                   </div>
-                  <div className="bg-white rounded-2xl border border-slate-200 p-5">
-                    <span className="text-xs text-slate-500">Total Bookings</span>
+                  <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs">
+                    <span className="text-xs font-medium text-slate-500">Total Bookings</span>
                     <p className="font-mono text-xl font-bold text-[#0A224E] tabular-nums mt-1">
                       {db.bookings.length}
                     </p>
                   </div>
-                  <div className="bg-white rounded-2xl border border-slate-200 p-5">
-                    <span className="text-xs text-slate-500">Pending Installments</span>
+                  <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs">
+                    <span className="text-xs font-medium text-slate-500">Pending Installments</span>
                     <p className="font-mono text-xl font-bold text-amber-700 tabular-nums mt-1">
                       {formatMoney(pendingBalancesNgn, currency)}
                     </p>
                   </div>
-                  <div className="bg-white rounded-2xl border border-slate-200 p-5">
-                    <span className="text-xs text-slate-500">Active Visa Queue</span>
+                  <div className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-xs">
+                    <span className="text-xs font-medium text-slate-500">Active Visa Queue</span>
                     <p className="font-mono text-xl font-bold text-[#0A224E] tabular-nums mt-1">
                       {activeVisasCount}
                     </p>
@@ -445,11 +454,11 @@ export function AdminDashboardPage() {
                 </div>
 
                 {/* Seat Occupancy Across Package 1-5 */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+                <div className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4 shadow-xs">
                   <h2 className="font-display text-lg font-bold text-[#0A224E]">
                     Ramadan 2027 Seat Occupancy (Packages 1–5)
                   </h2>
-                  <div className="space-y-3">
+                  <div className="space-y-3.5">
                     {RAMADAN_2027_SCHEDULES.map((baseSched) => {
                       const matchingSchedules = db.packages
                         .filter((p) => p.season === 'Ramadan 2027')
@@ -464,18 +473,18 @@ export function AdminDashboardPage() {
                       const seatsLeft = Math.max(0, seatsTotal - seatsBooked);
                       const pct = Math.min(100, Math.round((seatsBooked / seatsTotal) * 100));
                       return (
-                        <div key={baseSched.id} className="space-y-1">
+                        <div key={baseSched.id} className="space-y-1.5">
                           <div className="flex justify-between text-xs">
-                            <span className="font-semibold text-[#0A224E]">
+                            <span className="font-bold text-[#0A224E]">
                               {baseSched.label} · {baseSched.departureRoute} ({baseSched.departureDate})
                             </span>
                             <span className="font-mono tabular-nums text-slate-600">
                               {seatsBooked}/{seatsTotal} seats ({seatsLeft} left)
                             </span>
                           </div>
-                          <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-[#0A224E] rounded-full"
+                              className="h-full bg-gradient-to-r from-[#0A224E] to-[#D4AF37] rounded-full"
                               style={{ width: `${pct}%` }}
                             />
                           </div>
@@ -483,6 +492,38 @@ export function AdminDashboardPage() {
                       );
                     })}
                   </div>
+                </div>
+
+                {/* Customer Inquiries Inbox */}
+                <div className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <h2 className="font-display text-lg font-bold text-[#0A224E] flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-[#C89D28]" />
+                      <span>Customer Inquiries ({db.inquiries.length})</span>
+                    </h2>
+                  </div>
+                  {db.inquiries.length === 0 ? (
+                    <p className="text-xs text-slate-500">
+                      No new customer inquiries submitted via the Contact page yet.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {db.inquiries.map((inq) => (
+                        <div key={inq.id} className="p-4 rounded-xl bg-[#FAF9F6] border border-slate-200 text-xs space-y-1">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-bold text-[#0A224E]">{inq.subject}</span>
+                            <span className="font-mono text-slate-500">
+                              {new Date(inq.createdAt).toLocaleDateString('en-GB')}
+                            </span>
+                          </div>
+                          <p className="text-slate-600">
+                            From: <strong>{inq.name}</strong> ({inq.email} · {inq.phone})
+                          </p>
+                          <p className="text-slate-700 pt-1">{inq.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -510,7 +551,7 @@ export function AdminDashboardPage() {
                     <button
                       type="button"
                       onClick={() => setReceiptBooking(lastRegisteredBooking)}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-semibold bg-[#0A224E] text-white rounded-lg whitespace-nowrap shrink-0"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-bold bg-[#0A224E] text-white rounded-xl whitespace-nowrap shrink-0"
                     >
                       <Receipt className="w-3.5 h-3.5 text-[#F5B800]" />
                       <span>Print Receipt &amp; E-Ticket</span>
@@ -520,12 +561,12 @@ export function AdminDashboardPage() {
 
                 <form
                   onSubmit={handleRegisterPilgrim}
-                  className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 space-y-5"
+                  className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 space-y-5 shadow-xs"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
                     <div>
                       <h2 className="font-display text-lg font-bold text-[#0A224E] flex items-start sm:items-center gap-2">
-                        <UserPlus className="w-4 h-4 text-[#D4AF37] shrink-0 mt-1 sm:mt-0" />
+                        <UserPlus className="w-4 h-4 text-[#C89D28] shrink-0 mt-1 sm:mt-0" />
                         <span>Walk-In &amp; Group Pilgrim Registration</span>
                       </h2>
                       <p className="text-xs text-slate-500 mt-0.5">
@@ -537,7 +578,7 @@ export function AdminDashboardPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                     <div>
-                      <label htmlFor="pil-name" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-name" className="block text-xs font-semibold text-slate-700 mb-1">
                         Pilgrim Full Name (Passport)
                       </label>
                       <input
@@ -547,12 +588,12 @@ export function AdminDashboardPage() {
                         value={pilName}
                         onChange={(e) => setPilName(e.target.value)}
                         placeholder="e.g. Alhaji Yusuf Abdullahi"
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl bg-[#FAF9F6] focus:bg-white"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="pil-email" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-email" className="block text-xs font-semibold text-slate-700 mb-1">
                         Email Address
                       </label>
                       <input
@@ -562,12 +603,12 @@ export function AdminDashboardPage() {
                         value={pilEmail}
                         onChange={(e) => setPilEmail(e.target.value)}
                         placeholder="pilgrim@example.com"
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl bg-[#FAF9F6] focus:bg-white"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="pil-phone" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-phone" className="block text-xs font-semibold text-slate-700 mb-1">
                         Phone / WhatsApp
                       </label>
                       <input
@@ -577,12 +618,12 @@ export function AdminDashboardPage() {
                         value={pilPhone}
                         onChange={(e) => setPilPhone(e.target.value)}
                         placeholder="08035926442"
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg font-mono"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl font-mono bg-[#FAF9F6] focus:bg-white"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="pil-passport" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-passport" className="block text-xs font-semibold text-slate-700 mb-1">
                         International Passport No.
                       </label>
                       <input
@@ -592,19 +633,19 @@ export function AdminDashboardPage() {
                         value={pilPassport}
                         onChange={(e) => setPilPassport(e.target.value.toUpperCase())}
                         placeholder="B50294812"
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg font-mono"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl font-mono bg-[#FAF9F6] focus:bg-white"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="pil-gender" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-gender" className="block text-xs font-semibold text-slate-700 mb-1">
                         Gender
                       </label>
                       <select
                         id="pil-gender"
                         value={pilGender}
                         onChange={(e) => setPilGender(e.target.value as 'Male' | 'Female')}
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg bg-white"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       >
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
@@ -612,7 +653,7 @@ export function AdminDashboardPage() {
                     </div>
 
                     <div>
-                      <label htmlFor="pil-city" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-city" className="block text-xs font-semibold text-slate-700 mb-1">
                         State / City
                       </label>
                       <input
@@ -621,14 +662,14 @@ export function AdminDashboardPage() {
                         value={pilCity}
                         onChange={(e) => setPilCity(e.target.value)}
                         placeholder="Kano"
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl bg-[#FAF9F6] focus:bg-white"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2 border-t border-slate-100">
                     <div>
-                      <label htmlFor="pil-pkg" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-pkg" className="block text-xs font-semibold text-slate-700 mb-1">
                         Select Package
                       </label>
                       <select
@@ -639,7 +680,7 @@ export function AdminDashboardPage() {
                           setPilPackageId(e.target.value);
                           setPilScheduleId(nextPkg?.schedules[0]?.id || '');
                         }}
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg bg-white"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       >
                         {db.packages.map((p) => (
                           <option key={p.id} value={p.id}>
@@ -650,14 +691,14 @@ export function AdminDashboardPage() {
                     </div>
 
                     <div>
-                      <label htmlFor="pil-sched" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-sched" className="block text-xs font-semibold text-slate-700 mb-1">
                         Departure Schedule Batch
                       </label>
                       <select
                         id="pil-sched"
                         value={activeRegSchedule?.id || ''}
                         onChange={(e) => setPilScheduleId(e.target.value)}
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg bg-white"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       >
                         {regSchedules.map((s) => (
                           <option key={s.id} value={s.id}>
@@ -668,7 +709,7 @@ export function AdminDashboardPage() {
                     </div>
 
                     <div>
-                      <label htmlFor="pil-count" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-count" className="block text-xs font-semibold text-slate-700 mb-1">
                         Number of Pilgrims
                       </label>
                       <input
@@ -678,19 +719,19 @@ export function AdminDashboardPage() {
                         max={20}
                         value={pilCount}
                         onChange={(e) => setPilCount(Math.max(1, Number(e.target.value)))}
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg font-mono"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl font-mono bg-[#FAF9F6]"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="pil-plan" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-plan" className="block text-xs font-semibold text-slate-700 mb-1">
                         Payment Plan
                       </label>
                       <select
                         id="pil-plan"
                         value={pilPlan}
                         onChange={(e) => setPilPlan(e.target.value as 'Full' | 'Installment')}
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg bg-white"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       >
                         <option value="Installment">Installment / Deposit</option>
                         <option value="Full">Full Settlement (100%)</option>
@@ -698,7 +739,7 @@ export function AdminDashboardPage() {
                     </div>
 
                     <div>
-                      <label htmlFor="pil-deposit" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-deposit" className="block text-xs font-semibold text-slate-700 mb-1">
                         Amount Paid at Desk (NGN ₦)
                       </label>
                       <input
@@ -709,19 +750,19 @@ export function AdminDashboardPage() {
                         disabled={pilPlan === 'Full'}
                         value={pilPlan === 'Full' ? regValidation.totalAmountNgn : pilDeposit}
                         onChange={(e) => setPilDeposit(Number(e.target.value))}
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg font-mono disabled:bg-slate-100"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl font-mono disabled:bg-slate-100 bg-[#FAF9F6]"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="pil-channel" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="pil-channel" className="block text-xs font-semibold text-slate-700 mb-1">
                         Payment Channel
                       </label>
                       <select
                         id="pil-channel"
                         value={pilChannel}
                         onChange={(e) => setPilChannel(e.target.value as PaymentChannel)}
-                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg bg-white"
+                        className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       >
                         <option value="Offline POS / Cash">Offline POS / Cash (Kano Office)</option>
                         <option value="Bank Transfer">Bank Transfer</option>
@@ -737,7 +778,7 @@ export function AdminDashboardPage() {
                       onChange={(e) => setPilNotes(e.target.value)}
                       placeholder="Optional desk note (e.g., family room pairing, wheelchair support)"
                       aria-label="Desk registration note"
-                      className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-lg"
+                      className="w-full px-3 py-2.5 text-sm sm:text-xs border border-slate-300 rounded-xl bg-[#FAF9F6] focus:bg-white"
                     />
                     <label className="inline-flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
                       <input
@@ -750,7 +791,7 @@ export function AdminDashboardPage() {
                     </label>
                   </div>
 
-                  <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="bg-[#FAF9F6] rounded-xl border border-slate-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="text-xs space-y-0.5">
                       <p className="text-slate-600">
                         Total Value:{' '}
@@ -758,7 +799,7 @@ export function AdminDashboardPage() {
                           {formatMoney(regValidation.totalAmountNgn, currency)}
                         </span>{' '}
                         · Status:{' '}
-                        <span className="font-semibold text-emerald-700">{regValidation.status}</span>
+                        <span className="font-bold text-emerald-700">{regValidation.status}</span>
                       </p>
                       <p className="text-slate-500 font-mono">
                         Balance after payment:{' '}
@@ -771,7 +812,7 @@ export function AdminDashboardPage() {
                     <button
                       type="submit"
                       disabled={pilBusy}
-                      className="w-full sm:w-auto px-5 py-2.5 min-h-[42px] text-xs font-semibold bg-[#0A224E] hover:bg-[#0F2C67] text-white rounded-lg transition-colors whitespace-nowrap"
+                      className="w-full sm:w-auto px-5 py-2.5 min-h-[42px] text-xs font-bold bg-[#0A224E] hover:bg-[#102F6A] text-white rounded-xl transition-colors whitespace-nowrap"
                     >
                       {pilBusy ? 'Registering Pilgrim...' : 'Register Pilgrim & Issue Booking'}
                     </button>
@@ -779,7 +820,7 @@ export function AdminDashboardPage() {
                 </form>
 
                 {/* Registered Pilgrims Manifest */}
-                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs">
                   <div className="p-4 sm:px-6 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <h3 className="text-sm font-bold text-[#0A224E]">
                       Registered Pilgrims Manifest ({filteredPilgrimManifest.length})
@@ -792,7 +833,7 @@ export function AdminDashboardPage() {
                         onChange={(e) => setPilSearch(e.target.value)}
                         placeholder="Search name, ref, passport..."
                         aria-label="Search registered pilgrims"
-                        className="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-lg"
+                        className="w-full pl-8 pr-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       />
                     </div>
                   </div>
@@ -803,7 +844,6 @@ export function AdminDashboardPage() {
                     </div>
                   ) : (
                     <>
-                      {/* Mobile Card List */}
                       <div className="md:hidden divide-y divide-slate-100">
                         {filteredPilgrimManifest.map((b) => (
                           <div key={b.id} className="p-4 space-y-2">
@@ -814,7 +854,7 @@ export function AdminDashboardPage() {
                                   {b.reference} · {b.passengers[0]?.passportNumber || 'No Passport'}
                                 </p>
                               </div>
-                              <span className="text-xs font-semibold text-emerald-700">{b.status}</span>
+                              <StatusPill status={b.status} />
                             </div>
                             <p className="text-xs text-slate-600">
                               {b.itemTitle} · {b.scheduleLabel || b.routeOrLocation}
@@ -826,7 +866,7 @@ export function AdminDashboardPage() {
                               <button
                                 type="button"
                                 onClick={() => setReceiptBooking(b)}
-                                className="px-3 py-1.5 text-xs font-semibold bg-[#0A224E] text-white rounded-md"
+                                className="px-3 py-1.5 text-xs font-bold bg-[#0A224E] text-white rounded-lg"
                               >
                                 Receipt
                               </button>
@@ -835,22 +875,21 @@ export function AdminDashboardPage() {
                         ))}
                       </div>
 
-                      {/* Desktop Table */}
                       <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-xs">
-                          <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
+                          <thead className="bg-[#FAF9F6] text-slate-600 border-b border-slate-200">
                             <tr>
-                              <th className="text-left px-5 py-3 font-semibold">Pilgrim &amp; Passport</th>
-                              <th className="text-left px-4 py-3 font-semibold">Booking Ref</th>
-                              <th className="text-left px-4 py-3 font-semibold">Package &amp; Batch</th>
-                              <th className="text-right px-4 py-3 font-semibold">Paid / Total</th>
-                              <th className="text-left px-4 py-3 font-semibold">Status</th>
-                              <th className="text-right px-5 py-3 font-semibold">Action</th>
+                              <th className="text-left px-5 py-3 font-bold">Pilgrim &amp; Passport</th>
+                              <th className="text-left px-4 py-3 font-bold">Booking Ref</th>
+                              <th className="text-left px-4 py-3 font-bold">Package &amp; Batch</th>
+                              <th className="text-right px-4 py-3 font-bold">Paid / Total</th>
+                              <th className="text-left px-4 py-3 font-bold">Status</th>
+                              <th className="text-right px-5 py-3 font-bold">Action</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100">
                             {filteredPilgrimManifest.map((b) => (
-                              <tr key={b.id} className="hover:bg-slate-50/70">
+                              <tr key={b.id} className="hover:bg-[#FAF9F6]">
                                 <td className="px-5 py-3">
                                   <p className="font-bold text-[#0A224E]">{b.customerName}</p>
                                   <p className="text-slate-500 font-mono">
@@ -861,22 +900,24 @@ export function AdminDashboardPage() {
                                   {b.reference}
                                 </td>
                                 <td className="px-4 py-3 text-slate-700">
-                                  <p className="font-medium">{b.itemTitle}</p>
+                                  <p className="font-semibold">{b.itemTitle}</p>
                                   <p className="text-[11px] text-slate-500">{b.scheduleLabel || b.routeOrLocation}</p>
                                 </td>
                                 <td className="px-4 py-3 text-right font-mono tabular-nums">
-                                  <span className="font-semibold text-emerald-700">
+                                  <span className="font-bold text-emerald-700">
                                     {formatMoney(b.amountPaidNgn, currency)}
                                   </span>
                                   <span className="text-slate-400"> / </span>
                                   <span>{formatMoney(b.totalAmountNgn, currency)}</span>
                                 </td>
-                                <td className="px-4 py-3 font-semibold text-[#0A224E]">{b.status}</td>
+                                <td className="px-4 py-3">
+                                  <StatusPill status={b.status} />
+                                </td>
                                 <td className="px-5 py-3 text-right">
                                   <button
                                     type="button"
                                     onClick={() => setReceiptBooking(b)}
-                                    className="px-3 py-1.5 text-xs font-semibold bg-[#0A224E] text-white rounded-md"
+                                    className="px-3 py-1.5 text-xs font-bold bg-[#0A224E] text-white rounded-lg"
                                   >
                                     Receipt
                                   </button>
@@ -896,15 +937,15 @@ export function AdminDashboardPage() {
               <div className="space-y-6">
                 <form
                   onSubmit={handlePublishPackage}
-                  className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4"
+                  className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4 shadow-xs"
                 >
                   <h2 className="font-display text-lg font-bold text-[#0A224E] flex items-center gap-2">
-                    <Plus className="w-4 h-4 text-[#D4AF37]" />
+                    <Plus className="w-4 h-4 text-[#C89D28]" />
                     <span>Publish New Umrah / Hajj / Holiday Package</span>
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <div>
-                      <label htmlFor="adm-pkg-title" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="adm-pkg-title" className="block text-xs font-semibold text-slate-700 mb-1">
                         Package Title
                       </label>
                       <input
@@ -914,18 +955,18 @@ export function AdminDashboardPage() {
                         value={pkgTitle}
                         onChange={(e) => setPkgTitle(e.target.value)}
                         placeholder="e.g. Shawwal Special Umrah 2027"
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       />
                     </div>
                     <div>
-                      <label htmlFor="adm-pkg-cat" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="adm-pkg-cat" className="block text-xs font-semibold text-slate-700 mb-1">
                         Category
                       </label>
                       <select
                         id="adm-pkg-cat"
                         value={pkgCategory}
                         onChange={(e) => setPkgCategory(e.target.value as PackageCategory)}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       >
                         <option value="Ramadan Umrah">Ramadan Umrah</option>
                         <option value="Regular Umrah">Regular Umrah</option>
@@ -934,14 +975,14 @@ export function AdminDashboardPage() {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="adm-pkg-tier" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="adm-pkg-tier" className="block text-xs font-semibold text-slate-700 mb-1">
                         Tier
                       </label>
                       <select
                         id="adm-pkg-tier"
                         value={pkgTier}
                         onChange={(e) => setPkgTier(e.target.value as PackageTier)}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       >
                         <option value="Economy">Economy</option>
                         <option value="Luxury">Luxury</option>
@@ -949,7 +990,7 @@ export function AdminDashboardPage() {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="adm-pkg-price" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="adm-pkg-price" className="block text-xs font-semibold text-slate-700 mb-1">
                         Price (NGN ₦)
                       </label>
                       <input
@@ -958,11 +999,11 @@ export function AdminDashboardPage() {
                         required
                         value={pkgPrice}
                         onChange={(e) => setPkgPrice(Number(e.target.value))}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg font-mono"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono bg-[#FAF9F6]"
                       />
                     </div>
                     <div>
-                      <label htmlFor="adm-pkg-mak" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="adm-pkg-mak" className="block text-xs font-semibold text-slate-700 mb-1">
                         Makkah Hotel
                       </label>
                       <input
@@ -970,11 +1011,11 @@ export function AdminDashboardPage() {
                         type="text"
                         value={pkgMakkah}
                         onChange={(e) => setPkgMakkah(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       />
                     </div>
                     <div>
-                      <label htmlFor="adm-pkg-mad" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="adm-pkg-mad" className="block text-xs font-semibold text-slate-700 mb-1">
                         Madinah Hotel
                       </label>
                       <input
@@ -982,13 +1023,13 @@ export function AdminDashboardPage() {
                         type="text"
                         value={pkgMadinah}
                         onChange={(e) => setPkgMadinah(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label htmlFor="adm-pkg-season" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="adm-pkg-season" className="block text-xs font-semibold text-slate-700 mb-1">
                         Season Label
                       </label>
                       <input
@@ -996,11 +1037,11 @@ export function AdminDashboardPage() {
                         type="text"
                         value={pkgSeason}
                         onChange={(e) => setPkgSeason(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       />
                     </div>
                     <div>
-                      <label htmlFor="adm-pkg-cover" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="adm-pkg-cover" className="block text-xs font-semibold text-slate-700 mb-1">
                         Cover Poster / Image URL
                       </label>
                       <input
@@ -1008,7 +1049,7 @@ export function AdminDashboardPage() {
                         type="text"
                         value={pkgCover}
                         onChange={(e) => setPkgCover(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg font-mono"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono bg-[#FAF9F6]"
                       />
                     </div>
                   </div>
@@ -1016,19 +1057,19 @@ export function AdminDashboardPage() {
                     rows={2}
                     value={pkgDesc}
                     onChange={(e) => setPkgDesc(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                     aria-label="Package description"
                   />
                   <button
                     type="submit"
-                    className="px-5 py-2.5 text-xs font-semibold bg-[#0A224E] text-white rounded-lg"
+                    className="px-5 py-2.5 text-xs font-bold bg-[#0A224E] text-white rounded-xl"
                   >
                     Publish Package to Live Site
                   </button>
                 </form>
 
                 {/* Active Packages List */}
-                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs">
                   <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center">
                     <h3 className="text-sm font-bold text-[#0A224E]">
                       Published Packages ({db.packages.length})
@@ -1041,7 +1082,7 @@ export function AdminDashboardPage() {
                           <p className="text-sm font-bold text-[#0A224E]">{p.title}</p>
                           <p className="text-xs text-slate-500">
                             {p.category} · {p.tier} ·{' '}
-                            <span className="font-mono font-semibold text-[#0A224E]">
+                            <span className="font-mono font-bold text-[#0A224E]">
                               {formatMoney(p.priceNgn, currency)}
                             </span>
                           </p>
@@ -1050,7 +1091,7 @@ export function AdminDashboardPage() {
                           type="button"
                           onClick={() => deletePackage(p.id)}
                           aria-label={`Delete ${p.title}`}
-                          className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg"
+                          className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1062,7 +1103,7 @@ export function AdminDashboardPage() {
                 {/* Flight Fare Control */}
                 <form
                   onSubmit={handlePublishFlight}
-                  className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4"
+                  className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4 shadow-xs"
                 >
                   <h3 className="font-display text-lg font-bold text-[#0A224E]">
                     Promotional Flight Route &amp; Fare Control
@@ -1074,7 +1115,7 @@ export function AdminDashboardPage() {
                       onChange={(e) => setFltAirline(e.target.value)}
                       placeholder="Airline"
                       aria-label="Airline name"
-                      className="px-3 py-2.5 text-xs border border-slate-300 rounded-lg sm:col-span-2"
+                      className="px-3 py-2.5 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6] sm:col-span-2"
                     />
                     <input
                       type="text"
@@ -1082,7 +1123,7 @@ export function AdminDashboardPage() {
                       onChange={(e) => setFltNum(e.target.value)}
                       placeholder="Flight No"
                       aria-label="Flight number"
-                      className="px-3 py-2.5 text-xs border border-slate-300 rounded-lg font-mono"
+                      className="px-3 py-2.5 text-xs border border-slate-300 rounded-xl font-mono bg-[#FAF9F6]"
                     />
                     <input
                       type="text"
@@ -1090,7 +1131,7 @@ export function AdminDashboardPage() {
                       onChange={(e) => setFltOrigin(e.target.value.toUpperCase())}
                       placeholder="KAN"
                       aria-label="Origin code"
-                      className="px-3 py-2.5 text-xs border border-slate-300 rounded-lg font-mono"
+                      className="px-3 py-2.5 text-xs border border-slate-300 rounded-xl font-mono bg-[#FAF9F6]"
                     />
                     <input
                       type="text"
@@ -1098,7 +1139,7 @@ export function AdminDashboardPage() {
                       onChange={(e) => setFltDest(e.target.value.toUpperCase())}
                       placeholder="JED"
                       aria-label="Destination code"
-                      className="px-3 py-2.5 text-xs border border-slate-300 rounded-lg font-mono"
+                      className="px-3 py-2.5 text-xs border border-slate-300 rounded-xl font-mono bg-[#FAF9F6]"
                     />
                     <input
                       type="number"
@@ -1106,7 +1147,7 @@ export function AdminDashboardPage() {
                       onChange={(e) => setFltPrice(Number(e.target.value))}
                       placeholder="Price NGN"
                       aria-label="Flight fare in Naira"
-                      className="px-3 py-2.5 text-xs border border-slate-300 rounded-lg font-mono"
+                      className="px-3 py-2.5 text-xs border border-slate-300 rounded-xl font-mono bg-[#FAF9F6]"
                     />
                   </div>
                   <div className="flex flex-wrap justify-between items-center gap-2">
@@ -1115,7 +1156,7 @@ export function AdminDashboardPage() {
                     </span>
                     <button
                       type="submit"
-                      className="px-4 py-2 text-xs font-semibold bg-[#0A224E] text-white rounded-lg"
+                      className="px-4 py-2 text-xs font-bold bg-[#0A224E] text-white rounded-xl"
                     >
                       Add Flight Fare
                     </button>
@@ -1124,11 +1165,11 @@ export function AdminDashboardPage() {
                     {db.flights.slice(0, 4).map((f) => (
                       <div
                         key={f.id}
-                        className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs"
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-[#FAF9F6] border border-slate-200 text-xs"
                       >
                         <span>
                           {f.airline} ({f.originCode}→{f.destinationCode}) ·{' '}
-                          <span className="font-mono font-semibold">
+                          <span className="font-mono font-bold">
                             {formatMoney(f.priceNgn, currency)}
                           </span>
                         </span>
@@ -1136,7 +1177,7 @@ export function AdminDashboardPage() {
                           type="button"
                           onClick={() => deleteFlight(f.id)}
                           aria-label={`Remove ${f.flightNumber}`}
-                          className="text-rose-600 hover:underline"
+                          className="text-rose-600 font-semibold hover:underline"
                         >
                           Remove
                         </button>
@@ -1151,14 +1192,14 @@ export function AdminDashboardPage() {
               <div className="space-y-6">
                 <form
                   onSubmit={handlePublishGallery}
-                  className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4"
+                  className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4 shadow-xs"
                 >
                   <h2 className="font-display text-lg font-bold text-[#0A224E]">
                     Gallery Media Manager (Photo &amp; Video Uploader)
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label htmlFor="gal-title" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="gal-title" className="block text-xs font-semibold text-slate-700 mb-1">
                         Media Title
                       </label>
                       <input
@@ -1168,18 +1209,18 @@ export function AdminDashboardPage() {
                         value={galTitle}
                         onChange={(e) => setGalTitle(e.target.value)}
                         placeholder="e.g. Kano Batch 1 Departure at MAKIA"
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       />
                     </div>
                     <div>
-                      <label htmlFor="gal-cat" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="gal-cat" className="block text-xs font-semibold text-slate-700 mb-1">
                         Gallery Category
                       </label>
                       <select
                         id="gal-cat"
                         value={galCat}
                         onChange={(e) => setGalCat(e.target.value as GalleryCategory)}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       >
                         <option value="Makkah & Madinah">Makkah &amp; Madinah</option>
                         <option value="Pilgrim Departures">Pilgrim Departures</option>
@@ -1188,21 +1229,21 @@ export function AdminDashboardPage() {
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="gal-type" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="gal-type" className="block text-xs font-semibold text-slate-700 mb-1">
                         Media Format
                       </label>
                       <select
                         id="gal-type"
                         value={galType}
                         onChange={(e) => setGalType(e.target.value as 'photo' | 'video')}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       >
                         <option value="photo">Photo / Flyer</option>
                         <option value="video">Video / YouTube / TikTok / Instagram Reel</option>
                       </select>
                     </div>
                     <div>
-                      <label htmlFor="gal-loc" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="gal-loc" className="block text-xs font-semibold text-slate-700 mb-1">
                         Location
                       </label>
                       <input
@@ -1210,14 +1251,14 @@ export function AdminDashboardPage() {
                         type="text"
                         value={galLocation}
                         onChange={(e) => setGalLocation(e.target.value)}
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
                     <div>
-                      <label htmlFor="gal-url" className="block text-xs font-medium text-slate-700 mb-1">
+                      <label htmlFor="gal-url" className="block text-xs font-semibold text-slate-700 mb-1">
                         Image / Video URL (or upload file beside)
                       </label>
                       <input
@@ -1227,10 +1268,10 @@ export function AdminDashboardPage() {
                         value={galUrl}
                         onChange={(e) => setGalUrl(e.target.value)}
                         placeholder="https://youtube.com/... or /assets/..."
-                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg font-mono"
+                        className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono bg-[#FAF9F6]"
                       />
                     </div>
-                    <label className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold border border-dashed border-[#0A224E] rounded-lg bg-slate-50 hover:bg-slate-100 cursor-pointer text-[#0A224E]">
+                    <label className="flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold border border-dashed border-[#0A224E] rounded-xl bg-[#FAF9F6] hover:bg-slate-100 cursor-pointer text-[#0A224E]">
                       <Upload className="w-4 h-4" />
                       <span>Upload Photo or MP4/WebM Video File</span>
                       <input
@@ -1248,7 +1289,7 @@ export function AdminDashboardPage() {
                     onChange={(e) => setGalCaption(e.target.value)}
                     placeholder="Caption describing this photo or reel..."
                     aria-label="Media caption"
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                   />
 
                   <div className="flex flex-wrap items-center justify-between gap-3">
@@ -1263,7 +1304,7 @@ export function AdminDashboardPage() {
                     </label>
                     <button
                       type="submit"
-                      className="px-5 py-2.5 text-xs font-semibold bg-[#0A224E] text-white rounded-lg"
+                      className="px-5 py-2.5 text-xs font-bold bg-[#0A224E] text-white rounded-xl"
                     >
                       Publish to Public Gallery
                     </button>
@@ -1273,7 +1314,7 @@ export function AdminDashboardPage() {
                 {/* Gallery Items Table */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {db.gallery.map((g) => (
-                    <div key={g.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden flex flex-col">
+                    <div key={g.id} className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden flex flex-col shadow-xs">
                       <div className="h-36 bg-slate-100">
                         {g.mediaType === 'photo' ? (
                           <SafeImage src={g.url} alt={g.title} className="w-full h-full object-cover" />
@@ -1294,7 +1335,7 @@ export function AdminDashboardPage() {
                             onClick={() =>
                               updateGalleryItem(g.id, { featuredOnHome: !g.featuredOnHome })
                             }
-                            className={`text-[11px] font-semibold ${
+                            className={`text-[11px] font-bold ${
                               g.featuredOnHome ? 'text-emerald-700' : 'text-slate-500'
                             }`}
                           >
@@ -1317,7 +1358,7 @@ export function AdminDashboardPage() {
             )}
 
             {tab === 'bookings' && (
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs">
                 <div className="px-6 py-4 border-b border-slate-200">
                   <h2 className="font-display text-lg font-bold text-[#0A224E]">
                     Bookings &amp; Simulated Payment Ledger
@@ -1335,13 +1376,16 @@ export function AdminDashboardPage() {
                         <div key={b.id} className="p-5 space-y-3">
                           <div className="flex flex-wrap items-center justify-between gap-3">
                             <div>
-                              <p className="text-xs font-mono text-slate-500">
-                                {b.reference} · {b.customerName} ({b.customerPhone})
-                              </p>
-                              <h3 className="text-sm font-bold text-[#0A224E]">{b.itemTitle}</h3>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-xs font-mono text-slate-500">
+                                  {b.reference} · {b.customerName} ({b.customerPhone})
+                                </p>
+                                <StatusPill status={b.status} />
+                              </div>
+                              <h3 className="text-sm font-bold text-[#0A224E] mt-1">{b.itemTitle}</h3>
                               <p className="text-xs text-slate-600">
                                 Paid:{' '}
-                                <span className="font-mono font-semibold text-emerald-700 tabular-nums">
+                                <span className="font-mono font-bold text-emerald-700 tabular-nums">
                                   {formatMoney(b.amountPaidNgn, currency)}
                                 </span>{' '}
                                 / Total:{' '}
@@ -1358,7 +1402,7 @@ export function AdminDashboardPage() {
                                 onChange={(e) =>
                                   updateBookingStatus(b.id, e.target.value as BookingStatus)
                                 }
-                                className="px-2.5 py-1.5 text-xs border border-slate-300 rounded-md bg-white"
+                                className="px-3 py-1.5 text-xs font-semibold border border-slate-300 rounded-xl bg-[#FAF9F6]"
                               >
                                 <option value="Confirmed">Confirmed</option>
                                 <option value="Part-Paid">Part-Paid</option>
@@ -1369,7 +1413,7 @@ export function AdminDashboardPage() {
                           </div>
 
                           {rem > 0 && (
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 bg-slate-50 p-3 rounded-lg">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 bg-[#FAF9F6] p-3 rounded-xl border border-slate-200/80">
                               <input
                                 type="number"
                                 min={1000}
@@ -1382,7 +1426,7 @@ export function AdminDashboardPage() {
                                     [b.id]: Math.max(0, Number(e.target.value)),
                                   }))
                                 }
-                                className="px-3 py-2 text-xs border border-slate-300 rounded-md font-mono bg-white w-full sm:w-48"
+                                className="px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono bg-white w-full sm:w-48"
                               />
                               <button
                                 type="button"
@@ -1407,7 +1451,7 @@ export function AdminDashboardPage() {
                                     });
                                   }
                                 }}
-                                className="px-3 py-2 text-xs font-semibold bg-[#0A224E] text-white rounded-md w-full sm:w-auto"
+                                className="px-4 py-2 text-xs font-bold bg-[#0A224E] text-white rounded-xl w-full sm:w-auto"
                               >
                                 Record Offline POS / Cash Payment
                               </button>
@@ -1422,7 +1466,7 @@ export function AdminDashboardPage() {
             )}
 
             {tab === 'visas' && (
-              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-xs">
                 <div className="px-6 py-4 border-b border-slate-200">
                   <h2 className="font-display text-lg font-bold text-[#0A224E]">
                     Visa Processing Queue
@@ -1438,10 +1482,13 @@ export function AdminDashboardPage() {
                       <div key={v.id} className="p-5 space-y-3">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           <div>
-                            <p className="text-xs font-mono text-slate-500">
-                              Passport {v.passportNumber} · {v.applicantPhone}
-                            </p>
-                            <h3 className="text-sm font-bold text-[#0A224E]">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-xs font-mono text-slate-500">
+                                Passport {v.passportNumber} · {v.applicantPhone}
+                              </p>
+                              <StatusPill status={v.stage} />
+                            </div>
+                            <h3 className="text-sm font-bold text-[#0A224E] mt-1">
                               {v.applicantName} — {v.country} ({v.category})
                             </h3>
                             <p className="text-xs text-slate-600">
@@ -1462,7 +1509,7 @@ export function AdminDashboardPage() {
                                       : v.issuedVisaUrl,
                                 })
                               }
-                              className="px-3 py-1.5 text-xs border border-slate-300 rounded-lg bg-white"
+                              className="px-3 py-1.5 text-xs font-semibold border border-slate-300 rounded-xl bg-[#FAF9F6]"
                             >
                               <option value="Pending Review">Pending Review</option>
                               <option value="Processing at Embassy">Processing at Embassy</option>
@@ -1477,7 +1524,7 @@ export function AdminDashboardPage() {
                             {v.documents.map((doc) => (
                               <span
                                 key={doc.type}
-                                className="text-[11px] px-2.5 py-1 rounded bg-slate-100 text-slate-700 border border-slate-200"
+                                className="text-[11px] px-2.5 py-1 rounded-lg bg-[#FAF9F6] text-slate-700 border border-slate-200"
                               >
                                 {doc.type}: {doc.fileName}
                               </span>
@@ -1495,7 +1542,7 @@ export function AdminDashboardPage() {
               <div className="space-y-6">
                 <form
                   onSubmit={handlePublishEscort}
-                  className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4"
+                  className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4 shadow-xs"
                 >
                   <h2 className="font-display text-lg font-bold text-[#0A224E]">
                     Add Pilgrimage Escort
@@ -1508,7 +1555,7 @@ export function AdminDashboardPage() {
                       onChange={(e) => setEscName(e.target.value)}
                       placeholder="Escort Full Name"
                       aria-label="Escort Full Name"
-                      className="px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                      className="px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                     />
                     <input
                       type="text"
@@ -1516,7 +1563,7 @@ export function AdminDashboardPage() {
                       onChange={(e) => setEscRole(e.target.value)}
                       placeholder="Role / Title"
                       aria-label="Escort Role"
-                      className="px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                      className="px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                     />
                     <input
                       type="tel"
@@ -1525,12 +1572,12 @@ export function AdminDashboardPage() {
                       onChange={(e) => setEscPhone(e.target.value)}
                       placeholder="Phone Number"
                       aria-label="Escort Phone"
-                      className="px-3 py-2 text-xs border border-slate-300 rounded-lg font-mono"
+                      className="px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono bg-[#FAF9F6]"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-xs font-semibold bg-[#0A224E] text-white rounded-lg"
+                    className="px-4 py-2.5 text-xs font-bold bg-[#0A224E] text-white rounded-xl"
                   >
                     Add Escort to Roster
                   </button>
@@ -1538,7 +1585,7 @@ export function AdminDashboardPage() {
 
                 <form
                   onSubmit={handlePublishNotice}
-                  className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4"
+                  className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4 shadow-xs"
                 >
                   <h2 className="font-display text-lg font-bold text-[#0A224E]">
                     Publish Official Notice
@@ -1551,7 +1598,7 @@ export function AdminDashboardPage() {
                       onChange={(e) => setNotTitle(e.target.value)}
                       placeholder="Notice Title"
                       aria-label="Notice Title"
-                      className="px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                      className="px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                     />
                     <input
                       type="text"
@@ -1559,7 +1606,7 @@ export function AdminDashboardPage() {
                       onChange={(e) => setNotDate(e.target.value)}
                       placeholder="Date"
                       aria-label="Notice Date"
-                      className="px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                      className="px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                     />
                     <input
                       type="text"
@@ -1567,7 +1614,7 @@ export function AdminDashboardPage() {
                       onChange={(e) => setNotTime(e.target.value)}
                       placeholder="Time"
                       aria-label="Notice Time"
-                      className="px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                      className="px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                     />
                   </div>
                   <input
@@ -1576,7 +1623,7 @@ export function AdminDashboardPage() {
                     onChange={(e) => setNotVenue(e.target.value)}
                     placeholder="Venue"
                     aria-label="Notice Venue"
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                   />
                   <textarea
                     rows={2}
@@ -1585,11 +1632,11 @@ export function AdminDashboardPage() {
                     onChange={(e) => setNotMsg(e.target.value)}
                     placeholder="Official notice message..."
                     aria-label="Official notice message"
-                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg"
+                    className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-[#FAF9F6]"
                   />
                   <button
                     type="submit"
-                    className="px-4 py-2 text-xs font-semibold bg-[#0A224E] text-white rounded-lg"
+                    className="px-4 py-2.5 text-xs font-bold bg-[#0A224E] text-white rounded-xl"
                   >
                     Publish Notice
                   </button>
@@ -1598,7 +1645,7 @@ export function AdminDashboardPage() {
                     {db.notices.map((n) => (
                       <div
                         key={n.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs"
+                        className="flex items-center justify-between p-3 rounded-xl bg-[#FAF9F6] border border-slate-200 text-xs"
                       >
                         <span>
                           <strong className="text-[#0A224E]">{n.title}</strong> · {n.dateLabel}
@@ -1607,7 +1654,7 @@ export function AdminDashboardPage() {
                           type="button"
                           onClick={() => deleteNotice(n.id)}
                           aria-label={`Delete notice ${n.title}`}
-                          className="text-rose-600"
+                          className="text-rose-600 font-semibold"
                         >
                           Remove
                         </button>

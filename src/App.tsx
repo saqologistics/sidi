@@ -1,4 +1,6 @@
 import React from 'react';
+import { MotionConfig } from 'motion/react';
+import { AlertCircle, CheckCircle2, Info } from 'lucide-react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -50,20 +52,25 @@ function AppShell() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white text-slate-900">
+    <div className="min-h-screen flex flex-col bg-[#FAF9F6] text-slate-900">
       <Navbar />
-      <main className="flex-1 pb-14 md:pb-0">{renderPage()}</main>
+      <main className="flex-1 pb-16 md:pb-0">{renderPage()}</main>
       <Footer />
 
-      {/* Mobile Compact Sticky Quick-Action Bar (<= 48px, well below 15% mobile height) */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-[#0A224E] text-white border-t border-[#D4AF37]/40 px-3 h-12 flex items-center justify-between gap-2 no-print">
-        <span className="text-xs font-medium truncate text-slate-200">
-          Ramadan 2027 from <strong className="text-[#F5B800] font-mono">₦4.7M</strong>
-        </span>
+      {/* Mobile Compact Sticky Quick-Action Bar */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-30 bg-[#05122B]/95 backdrop-blur-md text-white border-t border-[#D4AF37]/40 px-4 h-14 flex items-center justify-between gap-3 no-print shadow-[0_-8px_24px_rgba(5,18,43,0.3)]">
+        <div className="min-w-0">
+          <p className="text-[10px] uppercase tracking-wider text-slate-300 leading-none">
+            Ramadan 2027 Umrah
+          </p>
+          <p className="text-xs font-semibold text-white truncate mt-0.5">
+            From <strong className="text-[#F5B800] font-mono">₦4.7M</strong> · Installments
+          </p>
+        </div>
         <button
           type="button"
           onClick={() => navigate('/umrah-packages')}
-          className="px-3.5 py-1.5 text-xs font-semibold bg-[#D4AF37] text-[#061533] rounded-md whitespace-nowrap shrink-0"
+          className="px-4 py-2 text-xs font-bold bg-gradient-to-r from-[#D4AF37] to-[#F5B800] text-[#05122B] rounded-lg whitespace-nowrap shrink-0 shadow-xs"
         >
           Book Now
         </button>
@@ -73,15 +80,22 @@ function AppShell() {
         <div
           role="status"
           aria-live="polite"
-          className={`fixed bottom-16 md:bottom-6 right-4 left-4 sm:left-auto sm:max-w-sm z-50 px-4 py-3 rounded-xl shadow-lg text-xs font-semibold border no-print ${
+          className={`fixed bottom-18 md:bottom-6 right-4 left-4 sm:left-auto sm:max-w-sm z-50 px-4 py-3.5 rounded-xl shadow-2xl text-xs font-semibold border flex items-center gap-2.5 no-print backdrop-blur-md ${
             toast.tone === 'error'
-              ? 'bg-rose-900 text-white border-rose-700'
+              ? 'bg-rose-950/95 text-white border-rose-500/60'
               : toast.tone === 'success'
-                ? 'bg-[#0A224E] text-white border-[#D4AF37]'
-                : 'bg-slate-900 text-white border-slate-700'
+                ? 'bg-[#05122B]/95 text-white border-[#D4AF37]/70'
+                : 'bg-slate-900/95 text-white border-slate-700'
           }`}
         >
-          {toast.text}
+          {toast.tone === 'error' ? (
+            <AlertCircle className="w-4 h-4 text-rose-300 shrink-0" />
+          ) : toast.tone === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 text-[#F5B800] shrink-0" />
+          ) : (
+            <Info className="w-4 h-4 text-[#D4AF37] shrink-0" />
+          )}
+          <span>{toast.text}</span>
         </div>
       )}
 
@@ -94,8 +108,10 @@ function AppShell() {
 
 export default function App() {
   return (
-    <AppProvider>
-      <AppShell />
-    </AppProvider>
+    <MotionConfig reducedMotion="user">
+      <AppProvider>
+        <AppShell />
+      </AppProvider>
+    </MotionConfig>
   );
 }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CheckCircle2, FileCheck2, ShieldCheck, Upload } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import type { VisaApplication, VisaDocumentItem } from '../types/travel';
+import { IslamicGeometricBackdrop } from '../components/BrandVisuals';
 
 const VISA_GUIDES: {
   country: string;
@@ -36,7 +37,7 @@ const VISA_GUIDES: {
     category: 'UK Visa',
     timeline: '15 Working Days',
     feeNgn: 'Advisory & Filing Support from ₦250,000',
-    notes: 'Full DS-160/UKVI application review, bank statement audit, and TLScontact appointment scheduling.',
+    notes: 'Full UKVI application review, bank statement audit, and TLScontact appointment scheduling.',
   },
   {
     country: 'Schengen (Europe)',
@@ -88,6 +89,7 @@ export function VisaServicesPage() {
   }, [currentUser]);
 
   const activeGuide = VISA_GUIDES[selectedGuideIdx];
+  const checkedCount = CHECKLIST_ITEMS.filter((item) => checkedDocs[item]).length;
 
   const handleFileUpload = (
     docType: VisaDocumentItem['type'],
@@ -138,21 +140,24 @@ export function VisaServicesPage() {
   };
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-10">
-        <div>
-          <p className="text-xs font-semibold text-[#0F2C67] tracking-wide">
+    <div className="bg-[#FAF9F6] min-h-screen">
+      <div className="relative bg-[#05122B] text-white py-11 border-b border-[#D4AF37]/30 overflow-hidden">
+        <IslamicGeometricBackdrop className="opacity-35" />
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6">
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#F5B800]">
             400+ Umrah Visas Successfully Issued · Sept – Nov 2026
           </p>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#0A224E] mt-1">
+          <h1 className="font-display text-3xl sm:text-4xl font-bold text-white mt-1.5">
             Visa Assistance &amp; Application Portal
           </h1>
-          <p className="text-sm text-slate-600 mt-2 max-w-2xl">
+          <p className="text-sm text-slate-300 mt-2 max-w-2xl">
             Select your destination visa category, verify your document checklist, and submit your
             online application directly to our Kano processing desk.
           </p>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8">
         {/* Country Guide Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {VISA_GUIDES.map((guide, idx) => {
@@ -162,13 +167,13 @@ export function VisaServicesPage() {
                 key={guide.category}
                 type="button"
                 onClick={() => setSelectedGuideIdx(idx)}
-                className={`text-left p-4 rounded-xl border transition-colors ${
+                className={`text-left p-4 rounded-2xl border transition-all ${
                   active
-                    ? 'bg-[#0A224E] text-white border-[#0A224E]'
-                    : 'bg-white text-slate-800 border-slate-200 hover:border-[#0A224E]/40'
+                    ? 'bg-gradient-to-br from-[#0A224E] to-[#05122B] text-white border-[#D4AF37] shadow-md'
+                    : 'bg-white text-slate-800 border-slate-200 hover:border-[#D4AF37]/60'
                 }`}
               >
-                <p className={`text-[11px] font-medium ${active ? 'text-[#F5B800]' : 'text-slate-500'}`}>
+                <p className={`text-[11px] font-semibold ${active ? 'text-[#F5B800]' : 'text-slate-500'}`}>
                   {guide.country}
                 </p>
                 <h2 className="text-sm font-bold mt-1">{guide.category}</h2>
@@ -183,34 +188,47 @@ export function VisaServicesPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left: Selected Guide & Interactive Checklist */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+            <div className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4 shadow-xs">
               <div className="flex items-center gap-2.5">
-                <FileCheck2 className="w-5 h-5 text-[#D4AF37]" />
+                <FileCheck2 className="w-5 h-5 text-[#C89D28]" />
                 <h2 className="font-display text-xl font-bold text-[#0A224E]">
                   {activeGuide.category} Requirements
                 </h2>
               </div>
-              <div className="text-xs space-y-1.5 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div className="text-xs space-y-2 bg-[#FAF9F6] p-4 rounded-xl border border-slate-200/80">
                 <p>
-                  <span className="font-semibold text-[#0A224E]">Processing Window:</span>{' '}
+                  <span className="font-bold text-[#0A224E]">Processing Window:</span>{' '}
                   {activeGuide.timeline}
                 </p>
                 <p>
-                  <span className="font-semibold text-[#0A224E]">Indicative Fee:</span>{' '}
-                  <span className="font-mono">{activeGuide.feeNgn}</span>
+                  <span className="font-bold text-[#0A224E]">Indicative Fee:</span>{' '}
+                  <span className="font-mono font-semibold text-[#0A224E]">{activeGuide.feeNgn}</span>
                 </p>
-                <p className="text-slate-600 pt-1">{activeGuide.notes}</p>
+                <p className="text-slate-600 pt-1 leading-relaxed">{activeGuide.notes}</p>
               </div>
 
-              <div>
-                <h3 className="text-xs font-bold text-[#0A224E] mb-2.5">
-                  Interactive Pre-Submission Document Checklist
-                </h3>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <h3 className="font-bold text-[#0A224E]">Pre-Submission Checklist</h3>
+                  <span className="font-mono font-semibold text-emerald-700">
+                    {checkedCount}/{CHECKLIST_ITEMS.length} ready
+                  </span>
+                </div>
+                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#0A224E] to-[#D4AF37] rounded-full transition-all"
+                    style={{ width: `${(checkedCount / CHECKLIST_ITEMS.length) * 100}%` }}
+                  />
+                </div>
                 <div className="space-y-2">
                   {CHECKLIST_ITEMS.map((item) => (
                     <label
                       key={item}
-                      className="flex items-start gap-2.5 p-2.5 rounded-lg border border-slate-200 bg-white cursor-pointer hover:bg-slate-50 text-xs text-slate-700"
+                      className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors text-xs ${
+                        checkedDocs[item]
+                          ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
+                          : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700'
+                      }`}
                     >
                       <input
                         type="checkbox"
@@ -229,29 +247,29 @@ export function VisaServicesPage() {
           </div>
 
           {/* Right: Online Visa Application Wizard */}
-          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 sm:p-7">
+          <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-xs">
             {submittedRef ? (
-              <div className="py-8 text-center space-y-4">
-                <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
+              <div className="py-10 text-center space-y-4">
+                <CheckCircle2 className="w-14 h-14 text-emerald-600 mx-auto" />
                 <h2 className="font-display text-2xl font-bold text-[#0A224E]">
                   Visa Application Received
                 </h2>
                 <p className="text-sm text-slate-600 max-w-md mx-auto">
                   Your {activeGuide.category} application ({submittedRef}) is now in our Kano Visa
-                  Desk queue. Track live embassy progress in your Pilgrim Dashboard.
+                  Desk queue. Track live embassy progress in your Pilgrim Portal.
                 </p>
                 <div className="flex flex-wrap justify-center gap-3 pt-2">
                   <button
                     type="button"
                     onClick={() => navigate('/dashboard')}
-                    className="px-5 py-2.5 text-xs font-semibold bg-[#0A224E] text-white rounded-lg"
+                    className="px-5 py-2.5 text-xs font-bold bg-[#0A224E] text-white rounded-xl"
                   >
-                    Track in Pilgrim Dashboard
+                    Track in Pilgrim Portal
                   </button>
                   <button
                     type="button"
                     onClick={() => setSubmittedRef(null)}
-                    className="px-5 py-2.5 text-xs font-semibold border border-slate-300 text-slate-700 rounded-lg"
+                    className="px-5 py-2.5 text-xs font-bold border border-slate-300 text-slate-700 rounded-xl"
                   >
                     Submit Another Application
                   </button>
@@ -259,21 +277,21 @@ export function VisaServicesPage() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                   <div>
-                    <h2 className="font-display text-xl font-bold text-[#0A224E]">
+                    <h2 className="font-display text-2xl font-bold text-[#0A224E]">
                       Start Online Visa Application
                     </h2>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Applying for {activeGuide.country} — {activeGuide.category}
                     </p>
                   </div>
-                  <ShieldCheck className="w-6 h-6 text-[#D4AF37]" />
+                  <ShieldCheck className="w-6 h-6 text-[#C89D28]" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="v-name" className="block text-xs font-medium text-slate-700 mb-1">
+                    <label htmlFor="v-name" className="block text-xs font-semibold text-slate-700 mb-1">
                       Applicant Full Name (as on Passport)
                     </label>
                     <input
@@ -283,11 +301,11 @@ export function VisaServicesPage() {
                       value={applicantName}
                       onChange={(e) => setApplicantName(e.target.value)}
                       placeholder="Alhaji Ibrahim Musa"
-                      className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg"
+                      className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl bg-[#FAF9F6] focus:bg-white"
                     />
                   </div>
                   <div>
-                    <label htmlFor="v-pass" className="block text-xs font-medium text-slate-700 mb-1">
+                    <label htmlFor="v-pass" className="block text-xs font-semibold text-slate-700 mb-1">
                       International Passport Number
                     </label>
                     <input
@@ -297,11 +315,11 @@ export function VisaServicesPage() {
                       value={passportNumber}
                       onChange={(e) => setPassportNumber(e.target.value.toUpperCase())}
                       placeholder="B50294812"
-                      className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg font-mono"
+                      className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl font-mono bg-[#FAF9F6] focus:bg-white"
                     />
                   </div>
                   <div>
-                    <label htmlFor="v-email" className="block text-xs font-medium text-slate-700 mb-1">
+                    <label htmlFor="v-email" className="block text-xs font-semibold text-slate-700 mb-1">
                       Email Address
                     </label>
                     <input
@@ -311,11 +329,11 @@ export function VisaServicesPage() {
                       value={applicantEmail}
                       onChange={(e) => setApplicantEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg"
+                      className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl bg-[#FAF9F6] focus:bg-white"
                     />
                   </div>
                   <div>
-                    <label htmlFor="v-phone" className="block text-xs font-medium text-slate-700 mb-1">
+                    <label htmlFor="v-phone" className="block text-xs font-semibold text-slate-700 mb-1">
                       WhatsApp / Phone Number
                     </label>
                     <input
@@ -325,13 +343,13 @@ export function VisaServicesPage() {
                       value={applicantPhone}
                       onChange={(e) => setApplicantPhone(e.target.value)}
                       placeholder="08035926442"
-                      className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg font-mono"
+                      className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl font-mono bg-[#FAF9F6] focus:bg-white"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="v-speed" className="block text-xs font-medium text-slate-700 mb-1">
+                  <label htmlFor="v-speed" className="block text-xs font-semibold text-slate-700 mb-1">
                     Processing Speed
                   </label>
                   <select
@@ -340,7 +358,7 @@ export function VisaServicesPage() {
                     onChange={(e) =>
                       setProcessingSpeed(e.target.value as VisaApplication['processingSpeed'])
                     }
-                    className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg bg-white"
+                    className="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl bg-[#FAF9F6]"
                   >
                     <option value="Standard (5-7 Days)">Standard (5–7 Days)</option>
                     <option value="Express (48-72 Hours)">Express (48–72 Hours)</option>
@@ -348,8 +366,8 @@ export function VisaServicesPage() {
                 </div>
 
                 <div className="pt-2">
-                  <p className="text-xs font-semibold text-slate-700 mb-2">
-                    Upload Supporting Documents (Optional here — can also upload later in Dashboard)
+                  <p className="text-xs font-bold text-slate-700 mb-2">
+                    Upload Supporting Documents (Optional here — can also upload later in Portal)
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {(
@@ -364,9 +382,13 @@ export function VisaServicesPage() {
                       return (
                         <label
                           key={docType}
-                          className="flex items-center justify-between gap-2 p-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 cursor-pointer text-xs"
+                          className={`flex items-center justify-between gap-2 p-3 rounded-xl border border-dashed cursor-pointer text-xs transition-colors ${
+                            existing
+                              ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+                              : 'border-slate-300 bg-[#FAF9F6] hover:bg-slate-100 text-slate-700'
+                          }`}
                         >
-                          <span className="truncate font-medium text-slate-700">
+                          <span className="truncate font-semibold">
                             {existing ? `✓ ${existing.fileName}` : docType}
                           </span>
                           <Upload className="w-4 h-4 text-[#0A224E] shrink-0" />
@@ -385,7 +407,7 @@ export function VisaServicesPage() {
                 <button
                   type="submit"
                   disabled={busy}
-                  className="w-full py-3 text-sm font-semibold bg-[#0A224E] hover:bg-[#0F2C67] text-white rounded-lg transition-colors"
+                  className="w-full py-3.5 text-sm font-bold bg-[#0A224E] hover:bg-[#102F6A] text-white rounded-xl transition-colors shadow-xs"
                 >
                   {busy ? 'Submitting Application...' : `Submit ${activeGuide.category} Application`}
                 </button>
